@@ -25,27 +25,32 @@ const DistributorsPage = () => {
       const response = await axios.get(
         "https://autofittools.com/api/distributors/data"
       );
-      setDistributors(response.data);
+      // Ensure names and numbers are arrays
+      const processedData = response.data.map((distributor) => ({
+        ...distributor,
+        names: distributor.names
+          ? Array.isArray(distributor.names)
+            ? distributor.names
+            : typeof distributor.names === "string"
+            ? JSON.parse(distributor.names)
+            : []
+          : [],
+        numbers: distributor.numbers
+          ? Array.isArray(distributor.numbers)
+            ? distributor.numbers
+            : typeof distributor.numbers === "string"
+            ? JSON.parse(distributor.numbers)
+            : []
+          : [],
+      }));
+      setDistributors(processedData);
     } catch (err) {
-      console.error(err);
+      console.error("Error fetching distributors:", err);
+      setDistributors([]);
     }
   };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    if (
-      !email ||
-      !companyName ||
-      !names.length ||
-      !numbers.length ||
-      !address ||
-      !googleMapLocation ||
-      !state
-    ) {
-      setError("All fields are required");
-      return;
-    }
 
     const distributorData = {
       email,
@@ -130,6 +135,12 @@ const DistributorsPage = () => {
       googleMapLocation,
       state,
     };
+
+    Object.keys(distributorData).forEach((key) => {
+      if (distributorData[key] === "") {
+        distributorData[key] = "";
+      }
+    });
 
     Object.keys(distributorData).forEach((key) => {
       if (distributorData[key] === selectedDistributor[key]) {
@@ -217,8 +228,7 @@ const DistributorsPage = () => {
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-                  required
+                  className="w-full p-3 border border-gray-300 rounded-lg"
                 />
               </div>
               <div>
@@ -230,7 +240,6 @@ const DistributorsPage = () => {
                   value={companyName}
                   onChange={(e) => setCompanyName(e.target.value)}
                   className="w-full p-3 border border-gray-300 rounded-lg"
-                  required
                 />
               </div>
               {/* Names */}
@@ -265,6 +274,7 @@ const DistributorsPage = () => {
                   Add Name
                 </button>
               </div>
+
               <div>
                 <label className="block text-gray-700 font-body">Numbers</label>
                 {numbers.map((number, index) => (
@@ -531,7 +541,7 @@ const DistributorsPage = () => {
               </th>
             </tr>
           </thead>
-          <tbody className="dark:bg-gray-600 dark:text-white">
+          <tbody className="bg-white dark:bg-gray-600">
             {distributors.map((distributor) => (
               <tr key={distributor.id}>
                 <td className="py-2 px-4 border dark:text-white font-body text-sm">

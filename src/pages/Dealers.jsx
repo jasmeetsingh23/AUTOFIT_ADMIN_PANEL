@@ -34,19 +34,7 @@ const DealersPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (
-      !email ||
-      !companyName ||
-      !names.length ||
-      !numbers.length ||
-      !address ||
-      !googleMapLocation ||
-      !state
-    ) {
-      setError("All fields are required");
-      return;
-    }
-
+    // Remove the requirement that all fields must be filled
     const dealerData = {
       email,
       companyName,
@@ -130,7 +118,14 @@ const DealersPage = () => {
       state,
     };
 
-    // Remove any fields that are not modified (i.e., values are the same as before)
+    // Include empty values explicitly if fields are cleared
+    Object.keys(dealerData).forEach((key) => {
+      if (dealerData[key] === "") {
+        dealerData[key] = ""; // Ensure that empty fields are sent explicitly
+      }
+    });
+
+    // Remove any fields that have not been changed (i.e., values are the same as before)
     Object.keys(dealerData).forEach((key) => {
       if (dealerData[key] === selectedDealer[key]) {
         delete dealerData[key];
@@ -217,8 +212,7 @@ const DealersPage = () => {
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-                  required
+                  className="w-full p-3 border border-gray-300 rounded-lg"
                 />
               </div>
               <div>
@@ -230,7 +224,6 @@ const DealersPage = () => {
                   value={companyName}
                   onChange={(e) => setCompanyName(e.target.value)}
                   className="w-full p-3 border border-gray-300 rounded-lg"
-                  required
                 />
               </div>
               {/* Names */}
